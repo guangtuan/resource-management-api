@@ -1,12 +1,10 @@
-const express = require('express')
-const bodyParser = require('body-parser')
-const cors = require('cors')
-const urlJoin = require('./url')
-const db = require('./framework/db')
-const { webPort } = require('./framework/env')
+import * as bodyParser from "body-parser"
+import * as express from 'express'
+import env from '../src/framework/env'
+import db from '../src/framework/db'
+import urlJoin from './url'
 
-const resourceApi = require('./resource/api')
-const spaceApi = require('./space/api')
+import spaceApi from './space/api'
 
 const createApp = () => {
     const app = express()
@@ -19,11 +17,11 @@ const createApp = () => {
 const appInit = async () => {
     const app = createApp()
 
-    ;[resourceApi, spaceApi].forEach(async ({ base, apis }) => {
+    ;[spaceApi].forEach(async ({ base, apis }) => {
         apis.forEach(async (api) => {
             const actualUrl = urlJoin(['api', base, api.url])
             console.log(`actual url is ${actualUrl}, method is ${api.method}`)
-            app[api.method]('/' + actualUrl, async (req, res) => {
+            app[api.method]('/' + actualUrl, async (req: express.Request, res: express.Response) => {
                 const result = await api.handler(req, res)
                 res.status(200)
                 res.json(result)
@@ -32,14 +30,14 @@ const appInit = async () => {
         })
     })
 
-    app.listen(webPort, () => {
-        console.log('app listen on', webPort)
-        console.log(
-            app._router.stack
-                .map(({ route }) => route)
-                .filter((_) => !!_)
-                .map(({ path }) => path),
-        )
+    app.listen(env.webPort, () => {
+        console.log('app listen on', env.webPort)
+        // console.log(
+        //     app._router.stack
+        //         .map(({ route }) => route)
+        //         .filter((_) => !!_)
+        //         .map(({ path }) => path),
+        // )
     })
 }
 
@@ -52,3 +50,7 @@ const appInit = async () => {
         await db.close()
     }
 })()
+function cors(): any {
+    throw new Error("Function not implemented.")
+}
+
